@@ -1,0 +1,307 @@
+# JBD - 취업 지원 솔루션 Application Configuration
+spring:
+  application:
+    name: jbd-backend
+
+  # Static Resource 설정 (API와 충돌 방지)
+  web:
+    resources:
+      add-mappings: false  # 정적 리소스 자동 매핑 비활성화
+  
+  # Default Database Configuration (H2 for development)
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: create
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    defer-datasource-initialization: true
+    open-in-view: false
+  
+  # SQL Initialization
+  sql:
+    init:
+      mode: never
+  
+  # H2 Console
+  h2:
+    console:
+      enabled: true
+  
+  # OAuth2 Configuration
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:190740779393-1g5j5bmjkdvogl6135iitbbg84h6dp86.apps.googleusercontent.com}
+            client-secret: ${GOOGLE_CLIENT_SECRET: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}
+            scope:
+              - openid
+              - profile
+              - email
+              - https://www.googleapis.com/auth/gmail.send
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
+  
+  # Mail Configuration (SendGrid)
+  mail:
+    host: smtp.sendgrid.net
+    port: 587
+    username: apikey
+    password: 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
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  
+  # Jackson Configuration
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+  
+  # File Upload Configuration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+  
+  # Profile Configuration
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:mysql}
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8081}
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+# AI Service Configuration
+ai:
+  service:
+    base-url: ${AI_SERVICE_URL:http://localhost:8001}
+    timeout: 30000
+    enabled: ${AI_SERVICE_ENABLED:true}
+    retry:
+      max-attempts: 3
+      delay: 1000
+
+# External API Configuration  
+external:
+  ai-service:
+    base-url: ${AI_SERVICE_URL:http://localhost:8001}
+    timeout: 30000
+  openai:
+    api-key: ${OPENAI_API_KEY:}
+    base-url: https://api.openai.com/v1
+
+# Logging Configuration
+logging:
+  level:
+    org.jbd: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.zaxxer.hikari: INFO
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${PID:- } --- [%t] %-40.40logger{39} : %m%n%wEx"
+
+# Webmail Configuration
+webmail:
+  default-sender:
+    email: "rudtnrla20000@gmail.com"
+    name: "잡았다 시스템"
+  test-mode: false  # 실제 SendGrid 이메일 발송
+
+  file:
+    name: logs/jbd-backend.log
+
+# Management Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  health:
+    mail:
+      enabled: false
+  info:
+    env:
+      enabled: true
+
+# Admin Configuration
+admin:
+  username: ${ADMIN_USERNAME:admin@jbd.com}
+  password: ${ADMIN_PASSWORD:admin123!@#}
+
+# App Configuration
+app:
+  admin:
+    secret-key: ${ADMIN_SECRET_KEY:ADMIN_SECRET_2024}
+
+# SpringDoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+    default-models-expand-depth: 1
+    default-model-expand-depth: 1
+    show-extensions: true
+    show-common-extensions: true
+    try-it-out-enabled: true
+  show-actuator: false
+  cache:
+    disabled: false
+  packages-to-scan: org.jbd.backend
+  paths-to-match: /api/**
+
+---
+# MySQL Profile
+spring:
+  config:
+    activate:
+      on-profile: mysql
+  datasource:
+    url: jdbc:mysql://localhost:3306/jobplatform?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true&readOnly=false
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:12345}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      read-only: false
+      auto-commit: true
+      connection-init-sql: "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED"
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+
+---
+# Development Profile (H2)
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+  h2:
+    console:
+      enabled: true
+
+logging:
+  level:
+    org.jbd: DEBUG
+    org.springframework.security: DEBUG
+
+---
+# Test Profile
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: never
+  h2:
+    console:
+      enabled: true
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+
+logging:
+  level:
+    org.jbd: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
